@@ -66,6 +66,7 @@ def fftTransfer(data, N=1024):
     """
     FFT变换
     :return:
+    TODO: 可能需要改进一下，从频谱图到功率谱图。好像又一样
     """
     if len(data) < N:
         for _ in range(N - len(data)):  # 补零补至N点
@@ -74,6 +75,7 @@ def fftTransfer(data, N=1024):
         data = data[0:N]
     df = [30 / N * i for i in range(N)]  # 频谱分辨率 N=1024,df也应该是1024长. 0到30
     fft_data = np.abs(np.fft.fft(data))  # type是array, shape是1024长
+
     fft_data = fft_data.tolist()  # 纵坐标
 
     # 前120个里面的极值点横坐标

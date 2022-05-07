@@ -1,2 +1,1 @@
-# InfraredPPG
- 近红外心率检测
+# InfraredPPG近红外心率检测最近使用   
