@@ -30,8 +30,8 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\03\front_ecg.txt")
-    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.4.txt")
+    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\03\front_ecg.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -40,9 +40,9 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_02front.npy")
-    data = np.load("output/video_signal/BVP_smooth_03front.npy")
+    # data = np.load("output/video_signal/BVP_smooth_03front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
-    # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.4.npy")
+    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
 
@@ -99,6 +99,7 @@ if __name__ == "__main__":
     realtime_win_start = 0
     realtime_win_end = 10
     while win_end < 5369:
+        # averageHR = stools.fftTransfer1(data[win_start:win_end])  # 得到心率list,长度为5
         averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end])  # 得到心率list,长度为5
         print('最大值：', averageHR)
         print('最大五个：', averageHRs)

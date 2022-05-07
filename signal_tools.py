@@ -32,33 +32,6 @@ FFT变换
 频域最大值对应的频率
 均方根误差(RMSE)计算
 """
-def find_Second_Value(num_list):
-    """
-    自定义函数：找到第二大的数
-    :param num_list:输入list
-    :return:
-    """
-    n = len(num_list)
-    if n == 0:
-        return 0
-    max_num = num_list[0]
-    sec_num = 0
-
-    first_index = 0
-    second_index = 0
-
-    for i in range(n):
-        if num_list[i] > max_num:
-            sec_num = max_num
-            second_index = first_index
-            max_num = num_list[i]
-            first_index = i
-        elif num_list[i] > sec_num and num_list[i] != max_num:
-            sec_num = num_list[i]
-            second_index = i
-    # print('second number is:', sec_num, 'second index is:', second_index)
-    # return sec_num, second_index
-    return sec_num
 
 
 # 当前使用
@@ -117,9 +90,21 @@ def fftTransfer(data, N=1024):
     return hr, final_hr
 
 
+
+def SPA(data):
+    """
+    输入是ndarry，行信号
+    输出还要ndarry，行信号
+    """
+    data_final = np.zeros_like(data)
+    for i in range(data.shape[0]):
+        data_final[i] = np.array(SPA_detrending(data[i].tolist()))
+    return data_final
+
 def SPA_detrending(data, mu=1200):
     """
     平滑先验法去除趋势 (Smoothness Priors Approach, SPA)
+    # 芬兰库奥皮奥大学的Karjalainen博士提出的一种信号非线性去趋势方法：https://m.hanspub.org/journal/paper/28723
     :param mu: 正则化系数
     :return:
     输入是一维list
@@ -136,19 +121,19 @@ def SPA_detrending(data, mu=1200):
     Y = sl.solve_triangular(L, data, trans='N', lower=True)
     y = sl.solve_triangular(L, Y, trans='T', lower=True)
     data -= y
-
     return data.tolist()
 
-def SPA(data):
+
+
+def Filter(data):
     """
     输入是ndarry，行信号
     输出还要ndarry，行信号
     """
     data_final = np.zeros_like(data)
     for i in range(data.shape[0]):
-        data_final[i] = np.array(SPA_detrending(data[i].tolist()))
+        data_final[i] = np.array(bandPassFilter(data[i].tolist()))
     return data_final
-
 
 def bandPassFilter(data):
     """
@@ -164,19 +149,7 @@ def bandPassFilter(data):
     b, a = signal.butter(N=8, Wn=[wn1, wn2], btype='bandpass')     # 8阶
     data = signal.filtfilt(b, a, data)                        # data为要过滤的信号
     data = data.tolist()                                 # ndarray --> list
-
     return data
-
-
-def Filter(data):
-    """
-    输入是ndarry，行信号
-    输出还要ndarry，行信号
-    """
-    data_final = np.zeros_like(data)
-    for i in range(data.shape[0]):
-        data_final[i] = np.array(bandPassFilter(data[i].tolist()))
-    return data_final
 
 
 
@@ -206,6 +179,7 @@ def cal_iou(box1, box2):
     a2 = s1 + s2 - a1
     iou = a1 / a2  # iou = a1/ (s1 + s2 - a1)
     return iou
+
 
 
 def Wavelet2(ppg):
@@ -308,14 +282,6 @@ def ICA_compute(data):
     return u  # 返回行信号array
 
 
-# # 1、巴特沃斯带通滤波函数
-# def bandPassFilter(data, samplerate=30):
-#     wn1 = 2 * 0.8 / samplerate  # origin 0.667  计算公式Wn=2*截止频率/采样频率
-#     wn2 = 2 * 2.0 / samplerate
-#     ba = signal.butter(8, [wn1, wn2], 'bandpass')  # 8阶,Wn是归一化截止频率|b，a: IIR滤波器的分子
-#     data = signal.filtfilt(ba[0], ba[1], data)  # 待验证。。
-#     return data
-
 
 # 移动平均滤波, 滤波器长度=3，并去直流，相当于抑制高频？
 def moveAverageFilter(data):
@@ -337,6 +303,7 @@ def moveAverageFilter(data):
     return data
 
 
+
 # 滑动窗口滤波算法？归一化，在0坐标轴附近震荡
 def sliding_window_demean(signal_values, num_windows):
     """
@@ -350,6 +317,7 @@ def sliding_window_demean(signal_values, num_windows):
         curr_slice = signal_values[i: i + window_size]
         demeaned[i:i + window_size] = curr_slice - np.mean(curr_slice)
     return demeaned
+
 
 
 # 全局自相关滤波，用自相关处理包含随机噪声的信号。应该是出自：
@@ -435,94 +403,6 @@ def amplitudeSelectiveFiltering(C_rgb, amax=0.002, delta=0.0001):
 
     return c.T, raw.T  # 转置后再输出
 
-
-# Homomorphic filter class 同态滤波
-class HomomorphicFilter:
-    """
-    博客： https://www.pythonf.cn/read/142147
-    Homomorphic filter implemented with diferents filters and an option to an external filter.
-    High-frequency filters implemented:
-        butterworth
-        gaussian
-    Attributes:
-        a, b: Floats used on emphasis filter:
-            H = a + b*H
-
-        .
-    """
-
-    def __init__(self, a=0.5, b=1.5):
-        self.a = float(a)
-        self.b = float(b)
-
-    # Filters
-    def __butterworth_filter(self, I_shape, filter_params):
-        P = I_shape[0] / 2
-        Q = I_shape[1] / 2
-        U, V = np.meshgrid(range(I_shape[0]), range(I_shape[1]), sparse=False, indexing='ij')
-        Duv = (((U - P) ** 2 + (V - Q) ** 2)).astype(float)
-        H = 1 / (1 + (Duv / filter_params[0] ** 2) ** filter_params[1])
-        return (1 - H)
-
-    def __gaussian_filter(self, I_shape, filter_params):
-        P = I_shape[0] / 2
-        Q = I_shape[1] / 2
-        H = np.zeros(I_shape)
-        U, V = np.meshgrid(range(I_shape[0]), range(I_shape[1]), sparse=False, indexing='ij')
-        Duv = (((U - P) ** 2 + (V - Q) ** 2)).astype(float)
-        H = np.exp((-Duv / (2 * (filter_params[0]) ** 2)))
-        return (1 - H)
-
-    # Methods
-    def __apply_filter(self, I, H):
-        H = np.fft.fftshift(H)
-        I_filtered = (self.a + self.b * H) * I
-        return I_filtered
-
-    def filter(self, I, filter_params, filter='butterworth', H=None):
-        """
-        Method to apply homormophic filter on an image
-        Attributes:
-            I: Single channel image
-            filter_params: Parameters to be used on filters:
-                butterworth:
-                    filter_params[0]: Cutoff frequency
-                    filter_params[1]: Order of filter
-                gaussian:
-                    filter_params[0]: Cutoff frequency
-            filter: Choose of the filter, options:
-                butterworth
-                gaussian
-                external
-            H: Used to pass external filter
-        """
-
-        #  Validating image
-        if len(I.shape) != 2:
-            raise Exception('Improper image')
-
-        # Take the image to log domain and then to frequency domain
-        I_log = np.log1p(np.array(I, dtype="float"))
-        I_fft = np.fft.fft2(I_log)
-
-        # Filters
-        if filter == 'butterworth':
-            H = self.__butterworth_filter(I_shape=I_fft.shape, filter_params=filter_params)
-        elif filter == 'gaussian':
-            H = self.__gaussian_filter(I_shape=I_fft.shape, filter_params=filter_params)
-        elif filter == 'external':
-            print('external')
-            if len(H.shape) != 2:
-                raise Exception('Invalid external filter')
-        else:
-            raise Exception('Selected filter not implemented')
-
-        # Apply filter on frequency domain then take the image back to spatial domain
-        I_fft_filt = self.__apply_filter(I=I_fft, H=H)
-        I_filt = np.fft.ifft2(I_fft_filt)
-        I = np.exp(np.real(I_filt)) - 1
-        return np.uint8(I)
-# End of class HomomorphicFilter
 
 
 # 5归一化
@@ -632,26 +512,21 @@ def signal_selection(s):
     return bpm, selected_signal
 
 
-# # 3FFT变换,计算脉搏率并展示结果
-# def fftTransfer(filtered, framerate):  # 输入数据和帧率:信号抽样率
-#     n = 512
-#     filtered = filtered.tolist()  # tolist将数组或者矩阵转换成列表
-#     if len(filtered) < n:
-#         for _ in range(n - len(filtered)):  # 补零补至N点
-#             filtered.append(0)
-#     else:
-#         filtered = filtered[0:n]
-#     df = [framerate / n * i for i in range(n)]  # 频谱分辨率？
-#     fft_data = np.abs(np.fft.fft(filtered))
-#
-#     hr = df[fft_data.tolist()[0:100].index(max(fft_data.tolist()[0:100]))] * 60  # 峰值横坐标
-#     print('HR estimate:', hr)
-#     # 展示真正的FFT变换后的结果
-#     plt.figure(4)
-#     plt.plot(df, fft_data, 'g')
-#     plt.axis([0, 3, 0, np.max(fft_data)])
-#     plt.title('Heart Rate estimate: {:.2f}'.format(hr))
-#     plt.show()
+# 3FFT变换,计算脉搏率并展示结果
+def fftTransfer1(filtered, framerate=30):  # 输入数据和帧率:信号抽样率
+    n = 512
+    if len(filtered) < n:
+        for _ in range(n - len(filtered)):  # 补零补至N点
+            filtered.append(0)
+    else:
+        filtered = filtered[0:n]
+    df = [framerate / n * i for i in range(n)]  # 频谱分辨率？
+    fft_data = np.abs(np.fft.fft(filtered))
+
+    hr = df[fft_data.tolist()[0:100].index(max(fft_data.tolist()[0:100]))] * 60  # 峰值横坐标
+    print('HR estimate:', hr)
+    return hr
+
 
 
 # 找到频域最大值对应的频率，找最大两种方法结果竟然不一样
