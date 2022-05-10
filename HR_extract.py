@@ -46,25 +46,26 @@ if __name__ == "__main__":
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
 
+    Plot = False
 
     # show 原始数据
-    stools.show_signal(data)
+    stools.show_signal(data, Plot)
 
     #归一化
-    data = stools.Normalization(data)
+    data = stools.Normalization(data, Plot)
 
     # SPA趋势去除
-    data = stools.SPA(data)
+    data = stools.SPA(data, Plot)
 
     # Filter
-    data = stools.BandPassFilter(data)
+    data = stools.BandPassFilter(data, Plot)
 
     # PCA计算
-    data = dc.PCA_compute(data).T  # PCA后shape是(5368, 5)
+    data = dc.PCA_compute(data, Plot).T  # PCA后shape是(5368, 5)
     data = data[0]
 
     # EMD计算
-    data = dc.EMD_compute(data)
+    data = dc.EMD_compute(data, Plot)
     data = data[0]
 
     data = data.tolist()
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     # print(data)
 
     # 小波去噪
-    data = stools.Wavelet(data)
+    data = stools.Wavelet(data, Plot)
 
 
     # 实时心率计算
@@ -90,18 +91,18 @@ if __name__ == "__main__":
     realtime_win_start = 0
     realtime_win_end = 10
     while win_end < 5369:
-        # averageHR = stools.fftTransfer1(data[win_start:win_end])  # 得到心率list,长度为5
-        averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end], win_i)  # 得到心率list,长度为5
-        print('最大值：', averageHR)
-        print('最大五个：', averageHRs)
+        # averageHR = stools.fftTransfer1(data[win_start:win_end])  
+        # averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end], win_i) 
+        averageHR = stools.FindPeak_window(data[win_start:win_end], win_i)
 
-        # 增加一个选择机制，看频域峰值哪个离上个最近
-        if len(video_BPM) > 0:
-            # 找到离上个BPM值最近的一个
-            averageHR = find_nearest(averageHRs, video_BPM[-1])
-            print('选择的心率值：', averageHR)
+        # print('最大值：', averageHR)
+        # print('最大五个：', averageHRs)
+        # # 增加一个选择机制，看频域峰值哪个离上个最近
+        # if len(video_BPM) > 0:
+        #     # 找到离上个BPM值最近的一个
+        #     averageHR = find_nearest(averageHRs, video_BPM[-1])
+        #     print('第', win_i, '个时间窗口心率：', averageHR)
 
-        print('第', win_i, '个时间窗口心率：', averageHR)
         win_i = win_i + 1
         video_BPM.append(averageHR)
 

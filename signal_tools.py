@@ -87,8 +87,34 @@ def fftTransfer(data, win_i, N=1024):
 
 
 
+# 对全局信号找峰值点
+def FindPeak(data, Plot=False):
+    num_peak = signal.find_peaks(data, distance=2)
+    num_peak = num_peak[0].tolist()
+    if Plot:
+        plt.plot(data)
+
+# 对窗口进行检测并plot,返回峰值数量
+def FindPeak_window(data, win_i):
+    num_peak = signal.find_peaks(data, distance=10)
+    num_peak = num_peak[0].tolist()
+    sum_peak = len(num_peak)
+    hr = sum_peak/10*60  # 10s的窗口
+    
+    plt.figure('FindPeak')
+    plt.plot(data)
+    for i in num_peak:
+        plt.plot(i, data[i], '*')
+    plt.title('window{}: Heart Rate estimate: {:.2f}'.format(win_i, hr))
+    plt.pause(0.5)	# pause 1 second
+    plt.clf()		# clear the current figure
+    
+    return hr
+
+
+
 # 归一化
-def Normalization(data):
+def Normalization(data, Plot=False):
     """
     输入：array，行信号
     输出：
@@ -97,13 +123,14 @@ def Normalization(data):
     for i in range(data.shape[0]):
         # data_final[i] = np.array(Z_ScoreNormalization(data[i]))
         data_final[i] = np.array(Arctan_Normalization(data[i]))
-    plt.figure("Normalization")
-    N = data.shape[0]
-    for n, s in enumerate(data):
-        plt.subplot(N,1,n+1)
-        plt.plot(s, 'g')
-        plt.title("Normalization "+str(n))
-        plt.xlabel("frames")
+    if Plot:
+        plt.figure("Normalization")
+        N = data.shape[0]
+        for n, s in enumerate(data):
+            plt.subplot(N,1,n+1)
+            plt.plot(s, 'g')
+            plt.title("Normalization "+str(n))
+            plt.xlabel("frames")
     return data_final
 
 # 归一化:Z-score标准化
@@ -150,7 +177,7 @@ def proportional_normalization(value):
 
 
 # 平滑先验趋势去除
-def SPA(data):
+def SPA(data, Plot=False):
     """
     输入是ndarry，行信号
     输出还要ndarry，行信号
@@ -158,13 +185,14 @@ def SPA(data):
     data_final = np.zeros_like(data)
     for i in range(data.shape[0]):
         data_final[i] = np.array(SPA_detrending(data[i].tolist()))
-    plt.figure("SPA")
-    N = data.shape[0]
-    for n, spa in enumerate(data):
-        plt.subplot(N,1,n+1)
-        plt.plot(spa, 'g')
-        plt.title("SPA "+str(n))
-        plt.xlabel("frames")
+    if Plot:
+        plt.figure("SPA")
+        N = data.shape[0]
+        for n, spa in enumerate(data):
+            plt.subplot(N,1,n+1)
+            plt.plot(spa, 'g')
+            plt.title("SPA "+str(n))
+            plt.xlabel("frames")
     # plt.tight_layout()
     # x = np.arange(0, data.shape[1])
     # for i in range(data.shape[0]):
@@ -195,7 +223,7 @@ def SPA_detrending(data, mu=1200):
 
 
 # 带通滤波
-def BandPassFilter(data):
+def BandPassFilter(data, Plot=False):
     """
     输入是ndarry，行信号
     输出还要ndarry，行信号
@@ -203,13 +231,14 @@ def BandPassFilter(data):
     data_final = np.zeros_like(data)
     for i in range(data.shape[0]):
         data_final[i] = np.array(Filter(data[i].tolist()))
-    plt.figure("Filter")
-    N = data.shape[0]
-    for n, fil in enumerate(data):
-        plt.subplot(N,1,n+1)
-        plt.plot(fil, 'g')
-        plt.title("Filter "+str(n))
-        plt.xlabel("frames")
+    if Plot:
+        plt.figure("Filter")
+        N = data.shape[0]
+        for n, fil in enumerate(data):
+            plt.subplot(N,1,n+1)
+            plt.plot(fil, 'g')
+            plt.title("Filter "+str(n))
+            plt.xlabel("frames")
     # plt.tight_layout()
     # x = np.arange(0, data.shape[1])  
     # for i in range(data.shape[0]):
@@ -249,7 +278,7 @@ def Wavelet2(ppg):
 
 
 
-def Wavelet(ppg):
+def Wavelet(ppg, Plot=False):
     """
     小波去噪 https://www.cnblogs.com/sggggr/p/12381164.html
     输入：list
@@ -281,8 +310,9 @@ def Wavelet(ppg):
     datarec = pywt.waverec(coeffs, 'db8')  # 将信号进行小波重构
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
     # plot一下
-    plt.figure('Wavelet')
-    plt.plot(data)
+    if Plot:
+        plt.figure('Wavelet')
+        plt.plot(data)
     return final_data.tolist()
 
 
@@ -497,16 +527,17 @@ def strided_mean(signal,sampling_time, mean_time):
 
 
 
-def show_signal(data):
+def show_signal(data, Plot=False):
     color_name = ['r', 'g', 'b', 'c', 'm']
     level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
-    plt.figure("original regions_mean")
-    x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
-    for i in range(data.shape[0]):
-        # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
-        plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
-    # plt.legend()
-    plt.title("original regions_mean")
+    if Plot:
+        plt.figure("original regions_mean")
+        x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
+        for i in range(data.shape[0]):
+            # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+            plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
+        # plt.legend()
+        plt.title("original regions_mean")
 
 
 

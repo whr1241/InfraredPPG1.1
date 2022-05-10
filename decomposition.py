@@ -25,7 +25,7 @@ SVD
 等
 """
 # 3主成分分析,得到一维主位置信号(降维)
-def PCA_compute(data):
+def PCA_compute(data, Plot=False):
     """
     Perform PCA on the time series data and project the points onto the
     principal axes of variation (eigenvectors of covariance matrix) to get
@@ -43,13 +43,14 @@ def PCA_compute(data):
     # 将跟踪的点运动投影到主分量向量上
     projected = pca.transform(temp)
     # plot出来
-    plt.figure("PCA")
-    N = data.shape[0]
-    for n, p in enumerate(data):
-        plt.subplot(N,1,n+1)
-        plt.plot(p, 'g')
-        plt.title("PCA "+str(n))
-        plt.xlabel("frames")
+    if Plot:
+        plt.figure("PCA")
+        N = data.shape[0]
+        for n, p in enumerate(data):
+            plt.subplot(N,1,n+1)
+            plt.plot(p, 'g')
+            plt.title("PCA "+str(n))
+            plt.xlabel("frames")
     # x = np.arange(0, data.shape[1])  
     # for i in range(data.shape[0]):
     #     plt.plot(x, data[i, :])
@@ -177,25 +178,26 @@ def optimal_svd1(Y):
 
 
 # 经验模态分解
-def EMD_compute(data):
+def EMD_compute(data, Plot=False):
     """
     EMD是输入一维信号array，分解为多个信号
     可以考虑一下输出裁剪一下
     """
     IMF = EMD().emd(data)  # 返回array(7, 5368)
     # 画出图
-    N = IMF.shape[0] + 1  
-    plt.figure('EMD')
-    plt.subplot(N,1,1)
-    plt.plot(data, 'r')
-    plt.title("Input signal")
-    plt.xlabel("Time [s]")
-    for n, imf in enumerate(IMF):
-        plt.subplot(N,1,n+2)
-        plt.plot(imf, 'g')
-        plt.title("IMF "+str(n+1))
+    if Plot:
+        N = IMF.shape[0] + 1  
+        plt.figure('EMD')
+        plt.subplot(N,1,1)
+        plt.plot(data, 'r')
+        plt.title("Input signal")
         plt.xlabel("Time [s]")
-    plt.tight_layout()  # 自动调整子图间距
+        for n, imf in enumerate(IMF):
+            plt.subplot(N,1,n+2)
+            plt.plot(imf, 'g')
+            plt.title("IMF "+str(n+1))
+            plt.xlabel("Time [s]")
+        plt.tight_layout()  # 自动调整子图间距
     return IMF  # n个行信号array
 
 
