@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     # 真值
     # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\03\front_ecg.txt")
-    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.2.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -42,42 +42,33 @@ if __name__ == "__main__":
     # data = np.load("output/video_signal/BVP_02front.npy")
     # data = np.load("output/video_signal/BVP_smooth_03front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
-    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
+    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.2.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
 
-    # color_name = ['r', 'g', 'b', 'c', 'm']
-    # level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
-    # plt.figure("original regions_mean")
-    # x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
-    # for i in range(data.shape[0]):
-    #     # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
-    #     plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
-    # # plt.legend()
-    # plt.title("original regions_mean")
 
+    # show 原始数据
+    stools.show_signal(data)
+
+    #归一化
+    data = stools.Normalization(data)
 
     # SPA趋势去除
     data = stools.SPA(data)
 
-
     # Filter
-    data = stools.Filter(data)
-
+    data = stools.BandPassFilter(data)
 
     # PCA计算
-    data = stools.PCA_compute(data).T  # PCA后shape是(5368, 5)
+    data = dc.PCA_compute(data).T  # PCA后shape是(5368, 5)
     data = data[0]
-    
 
     # EMD计算
     data = dc.EMD_compute(data)
     data = data[0]
 
     data = data.tolist()
-    # data = stools.arctan_Normalization(data)
-    # plt.figure('arctan')
-    # plt.plot(data)
+
 
     # ICA计算
     # data = stools.ICA_compute(data)  # numpy.ndarray
@@ -86,11 +77,11 @@ if __name__ == "__main__":
     # print(data)
 
     # 小波去噪
-    # data = stools.Wavelet(data)
-    # plt.figure('Wavelet')
-    # plt.plot(data)
+    data = stools.Wavelet(data)
+
 
     # 实时心率计算
+    win_i = 0  # 第几个窗口
     video_BPM = []
     real_BPM = []
     averageHR = 0
@@ -100,7 +91,7 @@ if __name__ == "__main__":
     realtime_win_end = 10
     while win_end < 5369:
         # averageHR = stools.fftTransfer1(data[win_start:win_end])  # 得到心率list,长度为5
-        averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end])  # 得到心率list,长度为5
+        averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end], win_i)  # 得到心率list,长度为5
         print('最大值：', averageHR)
         print('最大五个：', averageHRs)
 
@@ -110,6 +101,8 @@ if __name__ == "__main__":
             averageHR = find_nearest(averageHRs, video_BPM[-1])
             print('选择的心率值：', averageHR)
 
+        print('第', win_i, '个时间窗口心率：', averageHR)
+        win_i = win_i + 1
         video_BPM.append(averageHR)
 
         real_average_heartrate_win = []

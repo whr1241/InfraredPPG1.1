@@ -11,13 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.linalg as sl  # 应用于线性代数程序领域
 from scipy import signal
-from sklearn.decomposition import PCA
-from sklearn.decomposition import FastICA
-from sklearn.decomposition import FastICA
 # from filterpy.kalman import KalmanFilter
 # from filterpy.common import Q_discrete_white_noise
 import pywt
-
 
 """
 1、巴特沃斯滤波
@@ -35,7 +31,7 @@ FFT变换
 
 
 # 当前使用
-def fftTransfer(data, N=1024):
+def fftTransfer(data, win_i, N=1024):
     """
     FFT变换
     :return:
@@ -74,23 +70,86 @@ def fftTransfer(data, N=1024):
     # 当信号很清晰时，主峰很明显，直接只取主峰好了
     # TODO：假峰有时候也会变得高出真峰很多倍
     # TODO：还是应该按照功率比值阈值来判断吧
-    # if num_peak_list_Y_final[0] > num_peak_list_Y_final[1]*2:
-    #     final_hr = [hr]
+    if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
+        final_hr = [hr]
+    print('最大值占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
 
     # show一下
     plt.figure('FFT')
     plt.plot(df, fft_data)
     plt.axis([0, 5, 0, np.max(fft_data)*2])
-    plt.title('Heart Rate estimate: {:.2f}'.format(hr))
+    plt.title('窗口{}: Heart Rate estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
     plt.pause(0.1)	# pause 1 second
     plt.clf()		# clear the current figure
-
     return hr, final_hr
 
 
 
+# 归一化
+def Normalization(data):
+    """
+    输入：array，行信号
+    输出：
+    """
+    data_final = np.zeros_like(data)
+    for i in range(data.shape[0]):
+        # data_final[i] = np.array(Z_ScoreNormalization(data[i]))
+        data_final[i] = np.array(Arctan_Normalization(data[i]))
+    plt.figure("Normalization")
+    N = data.shape[0]
+    for n, s in enumerate(data):
+        plt.subplot(N,1,n+1)
+        plt.plot(s, 'g')
+        plt.title("Normalization "+str(n))
+        plt.xlabel("frames")
+    return data_final
+
+# 归一化:Z-score标准化
+def Z_ScoreNormalization(x):
+    mu = np.mean(x)
+    sigma = np.std(x)
+    x = (x - mu) / sigma;
+    return x
+
+# Min-Max Normalization归一化
+def Min_MaxNormalization(x):
+    x = (x - np.min(x)) / (np.max(x) - np.min(x))
+    return x
+
+# arctan归一化
+def Arctan_Normalization(data):
+    """
+    输入：
+    输出：
+    """
+    """反正切归一化，反正切函数的值域就是[-pi/2,pi/2]
+    公式：反正切值 * (2 / pi)
+    :return 值域[-1,1]，原始大于0的数被映射到[0,1]，小于0的数被映射到[-1,0]
+    """
+    new_value = np.arctan(data) * (2 / np.pi)
+    return new_value
+    # data = [x*4 for x in data]  # ？
+    # data = np.arctan(data)
+    # return data
+
+# log函数转换归一化
+def Log_Normalization(data):
+    data = np.log10(data)/np.log10(max(data))
+    return data
+
+def proportional_normalization(value):
+    """比例归一
+    公式：值/总和
+    :return 值域[0,1]
+    """
+    new_value = value / value.sum()
+    return new_value
+
+
+
+# 平滑先验趋势去除
 def SPA(data):
     """
     输入是ndarry，行信号
@@ -99,6 +158,17 @@ def SPA(data):
     data_final = np.zeros_like(data)
     for i in range(data.shape[0]):
         data_final[i] = np.array(SPA_detrending(data[i].tolist()))
+    plt.figure("SPA")
+    N = data.shape[0]
+    for n, spa in enumerate(data):
+        plt.subplot(N,1,n+1)
+        plt.plot(spa, 'g')
+        plt.title("SPA "+str(n))
+        plt.xlabel("frames")
+    # plt.tight_layout()
+    # x = np.arange(0, data.shape[1])
+    # for i in range(data.shape[0]):
+    #     plt.plot(x, data[i, :])  
     return data_final
 
 def SPA_detrending(data, mu=1200):
@@ -110,11 +180,10 @@ def SPA_detrending(data, mu=1200):
     输入是一维list
     """
     N = len(data)
-
     D = np.zeros((N - 2, N))
     for n in range(N - 2):
         D[n, n], D[n, n + 1], D[n, n + 2] = 1.0, -2.0, 1.0
-    D = mu * np.dot(D.T, D)
+    D = mu * np.dot(D.T, D)  # 内积
     for n in range(len(D)):
         D[n, n] += 1.0
     L = sl.cholesky(D, lower=True)
@@ -125,17 +194,29 @@ def SPA_detrending(data, mu=1200):
 
 
 
-def Filter(data):
+# 带通滤波
+def BandPassFilter(data):
     """
     输入是ndarry，行信号
     输出还要ndarry，行信号
     """
     data_final = np.zeros_like(data)
     for i in range(data.shape[0]):
-        data_final[i] = np.array(bandPassFilter(data[i].tolist()))
+        data_final[i] = np.array(Filter(data[i].tolist()))
+    plt.figure("Filter")
+    N = data.shape[0]
+    for n, fil in enumerate(data):
+        plt.subplot(N,1,n+1)
+        plt.plot(fil, 'g')
+        plt.title("Filter "+str(n))
+        plt.xlabel("frames")
+    # plt.tight_layout()
+    # x = np.arange(0, data.shape[1])  
+    # for i in range(data.shape[0]):
+    #     plt.plot(x, data[i, :])  
     return data_final
 
-def bandPassFilter(data):
+def Filter(data):
     """
     带通滤波器 0.667--2.5Hz
 
@@ -150,35 +231,6 @@ def bandPassFilter(data):
     data = signal.filtfilt(b, a, data)                        # data为要过滤的信号
     data = data.tolist()                                 # ndarray --> list
     return data
-
-
-
-# IOU计算函数
-def cal_iou(box1, box2):
-    """
-    :param box1: = [xmin1, ymin1, xmax1, ymax1]
-    :param box2: = [xmin2, ymin2, xmax2, ymax2]
-    :return:
-    """
-    [[xmin1, ymin1], [xmax1, ymin1], [xmin1, ymax1], [xmax1, ymax1]] = box1[0, :, :]
-    [[xmin2, ymin2], [xmax2, ymin2], [xmin2, ymax2], [xmax2, ymax2]] = box2[0, :, :]
-    # xmin2, ymin2, xmax2, ymax2 = box2[0,:,:]
-    # 计算每个矩形的面积
-    s1 = (xmax1 - xmin1) * (ymax1 - ymin1)  # b1的面积
-    s2 = (xmax2 - xmin2) * (ymax2 - ymin2)  # b2的面积
-
-    # 计算相交矩形
-    xmin = max(xmin1, xmin2)
-    ymin = max(ymin1, ymin2)
-    xmax = min(xmax1, xmax2)
-    ymax = min(ymax1, ymax2)
-
-    w = max(0, xmax - xmin)
-    h = max(0, ymax - ymin)
-    a1 = w * h  # C∩G的面积
-    a2 = s1 + s2 - a1
-    iou = a1 / a2  # iou = a1/ (s1 + s2 - a1)
-    return iou
 
 
 
@@ -197,12 +249,11 @@ def Wavelet2(ppg):
 
 
 
-
 def Wavelet(ppg):
     """
     小波去噪 https://www.cnblogs.com/sggggr/p/12381164.html
-    输入：
-    输出：
+    输入：list
+    输出：list
     """
     index = []
     data = []
@@ -229,7 +280,9 @@ def Wavelet(ppg):
 
     datarec = pywt.waverec(coeffs, 'db8')  # 将信号进行小波重构
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
-
+    # plot一下
+    plt.figure('Wavelet')
+    plt.plot(data)
     return final_data.tolist()
 
 
@@ -270,24 +323,23 @@ class KalmanFilter(object):
 
 
 
-def ICA_compute(data):
-    """
-    输入：应该是array
-    输出：
-    """
-    ica = FastICA(n_components=5)  # 得到几个输出?
-    data = data.T  # 需要输入列信号
-    u = ica.fit_transform(data)  # ica后也是列向量信号
-    u = u.T
-    return u  # 返回行信号array
 
-
+# 移动平均滤波
+def M_A_Filter(data):
+    """
+    输入是ndarry，行信号
+    输出还要ndarry，行信号
+    """
+    data_final = np.zeros_like(data)
+    for i in range(data.shape[0]):
+        data_final[i] = np.array(moveAverageFilter(data[i].tolist()))
+    return data_final
 
 # 移动平均滤波, 滤波器长度=3，并去直流，相当于抑制高频？
 def moveAverageFilter(data):
     """
+    输出是?
     输入是list?
-    输出是
     """
     data1 = []
     j = 0
@@ -331,39 +383,6 @@ def globalSelfsimilarityFilter(data):
     return data.tolist()
 
 
-# 2 平滑先验法 (Smoothness Priors Approach, SPA)|param mu: 正则化系数|去除趋势，相当于去除低频
-# 芬兰库奥皮奥大学的Karjalainen博士提出的一种信号非线性去趋势方法：https://m.hanspub.org/journal/paper/28723
-def SPA_detrending1(data, mu=1200):
-    """
-    平滑先验法去除趋势 (Smoothness Priors Approach, SPA),庆麟后来的
-    :param mu: 正则化系数
-    :return:
-    """
-    N = len(data)
-    D = np.zeros((N - 2, N))
-    for n in range(N - 2):
-        D[n, n], D[n, n + 1], D[n, n + 2] = 1.0, -2.0, 1.0
-    D = mu * np.dot(D.T, D)
-    for n in range(len(D)):
-        D[n, n] += 1.0
-    L = sl.cholesky(D, lower=True)
-    Y = sl.solve_triangular(L, data, trans='N', lower=True)
-    y = sl.solve_triangular(L, Y, trans='T', lower=True)
-    data -= y
-    return data
-
-
-# arctan归一化
-def arctan_Normalization(data):
-    """
-    输入：
-    输出：
-    """
-    data = [x*4 for x in data]
-    data = np.arctan(data)
-    data = data.tolist()
-    return data
-
 
 def amplitudeSelectiveFiltering(C_rgb, amax=0.002, delta=0.0001):
     """
@@ -405,81 +424,6 @@ def amplitudeSelectiveFiltering(C_rgb, amax=0.002, delta=0.0001):
 
 
 
-# 5归一化
-def arctanNormalization(self):
-    self.data = [x*4 for x in self.data]
-    self.data = np.arctan(self.data)
-    self.data = self.data.tolist()
-
-    plt.figure(2)  # 画图
-    plt.plot(self.data)
-    plt.title('arctan normalization')
-
-
-# 3主成分分析,得到一维主位置信号(降维)
-def PCA_compute(data):
-    """
-    Perform PCA on the time series data and project the points onto the
-    principal axes of variation (eigenvectors of covariance matrix) to get
-    the principal 1-D position signals
-    输入是ndarray,行信号
-    """
-    # Object for principal component analysis主成分分析对象
-    pca = PCA(n_components=5)
-    temp = data.T  # Arrange the time series data in the format given in the paper
-    l2_norms = np.linalg.norm(temp, ord=2, axis=1)  # Get L2 norms of each m_t
-    # 抛弃在前25名中有L2标准的分数
-    temp_with_abnormalities_removed = temp[l2_norms < np.percentile(l2_norms, 75)]
-    # 拟合PCA模型
-    pca.fit(temp_with_abnormalities_removed)
-    # 将跟踪的点运动投影到主分量向量上
-    projected = pca.transform(temp)
-    return projected
-
-
-# 10奇异值分解SVD
-def optimal_svd(Y):
-    ### OPTIMAL SHRINKAGE SVD
-    # Implementation of algorithm proposed in:
-    # based on the following paper: Gavish, Matan, and David L. Donoho. "Optimal shrinkage of singular values." IEEE Transactions on Information Theory 63.4 (2017): 2137-2152.
-    #
-    U, s, V = np.linalg.svd(Y, full_matrices=False)
-    m, n = Y.shape
-    beta = m / n
-
-    y_med = np.median(s)
-
-    beta_m = (1 - np.sqrt(beta)) ** 2
-    beta_p = (1 + np.sqrt(beta)) ** 2
-
-    t_array = np.linspace(beta_m, beta_p, 100000)
-    dt = np.diff(t_array)[0]
-
-    f = lambda t: np.sqrt((beta_p - t) * (t - beta_m)) / (2 * np.pi * t * beta)
-    F = lambda t: np.cumsum(f(t) * dt)
-
-    mu_beta = t_array[np.argmin((F(t_array) - 0.5) ** 2)]
-
-    sigma_hat = y_med / np.sqrt(n * mu_beta)
-
-    def eta(y, beta):
-        mask = (y >= (1 + np.sqrt(beta)))
-        aux_sqrt = np.sqrt((y[mask > 0] ** 2 - beta - 1) ** 2 - 4 * beta)
-        aux = np.zeros(y.shape)
-        aux[mask > 0] = aux_sqrt / y[mask > 0]
-        return mask * aux
-
-    def eta_sigma(y, beta, sigma):
-        return sigma * eta(y / sigma, beta)
-
-    s_eta = eta_sigma(s, beta, sigma_hat * np.sqrt(n))
-
-    #     trim U,V
-    aux = s_eta > 0
-
-    return U[:, aux], s_eta[aux], V[aux, :]
-
-
 # 选择最具有周期性的信号，即功率谱密度峰值点横坐标对应的频率
 def signal_selection(s):
     """
@@ -512,20 +456,6 @@ def signal_selection(s):
     return bpm, selected_signal
 
 
-# 3FFT变换,计算脉搏率并展示结果
-def fftTransfer1(filtered, framerate=30):  # 输入数据和帧率:信号抽样率
-    n = 512
-    if len(filtered) < n:
-        for _ in range(n - len(filtered)):  # 补零补至N点
-            filtered.append(0)
-    else:
-        filtered = filtered[0:n]
-    df = [framerate / n * i for i in range(n)]  # 频谱分辨率？
-    fft_data = np.abs(np.fft.fft(filtered))
-
-    hr = df[fft_data.tolist()[0:100].index(max(fft_data.tolist()[0:100]))] * 60  # 峰值横坐标
-    print('HR estimate:', hr)
-    return hr
 
 
 
@@ -537,6 +467,11 @@ def get_HR(f_signal, samplerate):  # f, pxx_spec都是251长度一维ndarray
     hr = f[max_loc[1]]
     bpm = 60.0 * hr
     return bpm
+
+
+# 信噪比
+def SNR(data):
+    pass
 
 
 # 12均方根误差（RMSE）计算
@@ -559,3 +494,56 @@ def strided_mean(signal,sampling_time, mean_time):
        mean_sig[int(i)]= signal[int(i*block_len):int((i+1)*block_len),...].mean()
    return mean_sig, mean_t
 
+
+
+
+def show_signal(data):
+    color_name = ['r', 'g', 'b', 'c', 'm']
+    level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
+    plt.figure("original regions_mean")
+    x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
+    for i in range(data.shape[0]):
+        # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+        plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
+    # plt.legend()
+    plt.title("original regions_mean")
+
+
+
+# 2 平滑先验法 (Smoothness Priors Approach, SPA)|param mu: 正则化系数|去除趋势，相当于去除低频
+# 芬兰库奥皮奥大学的Karjalainen博士提出的一种信号非线性去趋势方法：https://m.hanspub.org/journal/paper/28723
+def SPA_detrending1(data, mu=1200):
+    """
+    平滑先验法去除趋势 (Smoothness Priors Approach, SPA),庆麟后来的
+    :param mu: 正则化系数
+    :return:
+    """
+    N = len(data)
+    D = np.zeros((N - 2, N))
+    for n in range(N - 2):
+        D[n, n], D[n, n + 1], D[n, n + 2] = 1.0, -2.0, 1.0
+    D = mu * np.dot(D.T, D)
+    for n in range(len(D)):
+        D[n, n] += 1.0
+    L = sl.cholesky(D, lower=True)
+    Y = sl.solve_triangular(L, data, trans='N', lower=True)
+    y = sl.solve_triangular(L, Y, trans='T', lower=True)
+    data -= y
+    return data
+
+
+
+# FFT变换,计算脉搏率并展示结果
+def fftTransfer1(filtered, framerate=30):  # 输入数据和帧率:信号抽样率
+    n = 512
+    if len(filtered) < n:
+        for _ in range(n - len(filtered)):  # 补零补至N点
+            filtered.append(0)
+    else:
+        filtered = filtered[0:n]
+    df = [framerate / n * i for i in range(n)]  # 频谱分辨率？
+    fft_data = np.abs(np.fft.fft(filtered))
+
+    hr = df[fft_data.tolist()[0:100].index(max(fft_data.tolist()[0:100]))] * 60  # 峰值横坐标
+    print('HR estimate:', hr)
+    return hr

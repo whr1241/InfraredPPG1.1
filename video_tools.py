@@ -19,6 +19,38 @@ from PIL import Image, ImageDraw
 3、返回额头三维ROI数组
 4、人脸皮肤分割
 """
+
+
+
+# IOU计算函数
+def cal_iou(box1, box2):
+    """
+    :param box1: = [xmin1, ymin1, xmax1, ymax1]
+    :param box2: = [xmin2, ymin2, xmax2, ymax2]
+    :return:
+    """
+    [[xmin1, ymin1], [xmax1, ymin1], [xmin1, ymax1], [xmax1, ymax1]] = box1[0, :, :]
+    [[xmin2, ymin2], [xmax2, ymin2], [xmin2, ymax2], [xmax2, ymax2]] = box2[0, :, :]
+    # xmin2, ymin2, xmax2, ymax2 = box2[0,:,:]
+    # 计算每个矩形的面积
+    s1 = (xmax1 - xmin1) * (ymax1 - ymin1)  # b1的面积
+    s2 = (xmax2 - xmin2) * (ymax2 - ymin2)  # b2的面积
+
+    # 计算相交矩形
+    xmin = max(xmin1, xmin2)
+    ymin = max(ymin1, ymin2)
+    xmax = min(xmax1, xmax2)
+    ymax = min(ymax1, ymax2)
+
+    w = max(0, xmax - xmin)
+    h = max(0, ymax - ymin)
+    a1 = w * h  # C∩G的面积
+    a2 = s1 + s2 - a1
+    iou = a1 / a2  # iou = a1/ (s1 + s2 - a1)
+    return iou
+
+
+
 def gridding_value(xmin, ymin, boxw, boxh, frame):
     """
     得到多个网格的均值
