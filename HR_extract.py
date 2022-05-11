@@ -30,8 +30,8 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\03\front_ecg.txt")
-    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.2.txt")
+    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\02\front_ecg.txt")
+    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -40,19 +40,19 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_02front.npy")
-    # data = np.load("output/video_signal/BVP_smooth_03front.npy")
+    data = np.load("output/video_signal/BVP_smooth_02front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
-    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.2.npy")
+    # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
 
-    Plot = False
+    Plot = True
 
     # show 原始数据
     stools.show_signal(data, Plot)
 
     #归一化
-    data = stools.Normalization(data, Plot)
+    # data = stools.Normalization(data, Plot)
 
     # SPA趋势去除
     data = stools.SPA(data, Plot)
@@ -64,9 +64,13 @@ if __name__ == "__main__":
     data = dc.PCA_compute(data, Plot).T  # PCA后shape是(5368, 5)
     data = data[0]
 
-    # EMD计算
-    data = dc.EMD_compute(data, Plot)
-    data = data[0]
+    # EMD计算,效果奇差，暂时不用
+    # data = dc.EMD_compute(data, Plot)
+    # data = data[0]
+
+    # EEMD计算,效果奇差，暂时不用
+    # data = dc.EEMD_compute(data, Plot)
+    # data = data[3]
 
     data = data.tolist()
 
@@ -92,16 +96,18 @@ if __name__ == "__main__":
     realtime_win_end = 10
     while win_end < 5369:
         # averageHR = stools.fftTransfer1(data[win_start:win_end])  
-        # averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end], win_i) 
-        averageHR = stools.FindPeak_window(data[win_start:win_end], win_i)
+        averageHR, averageHRs = stools.fftTransfer(data[win_start:win_end], win_i) 
+        # averageHR = stools.FindPeak_window(data[win_start:win_end], win_i)
 
-        # print('最大值：', averageHR)
-        # print('最大五个：', averageHRs)
-        # # 增加一个选择机制，看频域峰值哪个离上个最近
-        # if len(video_BPM) > 0:
-        #     # 找到离上个BPM值最近的一个
-        #     averageHR = find_nearest(averageHRs, video_BPM[-1])
-        #     print('第', win_i, '个时间窗口心率：', averageHR)
+        print('最大五个：', averageHRs, '最大值：', averageHR)
+        # 增加一个选择机制，看频域峰值哪个离上个最近
+        if len(video_BPM) > 0:
+            # 找到离上个BPM值最近的一个
+            averageHR = find_nearest(averageHRs, video_BPM[-1])
+            # 防止突变
+            if abs(averageHR - video_BPM[-1]) > 15:
+                averageHR = video_BPM[-1]
+            print('第', win_i, '个时间窗口心率：', averageHR)
 
         win_i = win_i + 1
         video_BPM.append(averageHR)
@@ -110,7 +116,7 @@ if __name__ == "__main__":
         for idx, tm in enumerate(times):
             if realtime_win_start < tm < realtime_win_end:
                 real_average_heartrate_win.append(bpm[idx])
-        real_BPM.append(np.mean(real_average_heartrate_win))  # 对前5秒ECG心率取平均
+        real_BPM.append(np.mean(real_average_heartrate_win))  # 对前5/10秒ECG心率取平均
 
         # 步进为1s
         win_start += 30*1

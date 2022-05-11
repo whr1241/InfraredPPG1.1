@@ -203,13 +203,27 @@ def EMD_compute(data, Plot=False):
 
 
 # 扩展的经验模态分解
-def EEMD_compute(data):
+def EEMD_compute(data, Plot=False):
     """
     输入：一维array
     输出：二维行信号array
     """
     eemd = EEMD() 
     E_IMFs = eemd.eemd(data)
+
+    if Plot:
+        N = E_IMFs.shape[0] + 1  
+        plt.figure('EEMD')
+        plt.subplot(N,1,1)
+        plt.plot(data, 'r')
+        plt.title("Input signal")
+        plt.xlabel("Time [s]")
+        for n, imf in enumerate(E_IMFs):
+            plt.subplot(N,1,n+2)
+            plt.plot(imf, 'g')
+            plt.title("IMF "+str(n+1))
+            plt.xlabel("Time [s]")
+        plt.tight_layout()  # 自动调整子图间距
 
     return E_IMFs  # 行信号array
 

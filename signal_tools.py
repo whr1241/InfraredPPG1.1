@@ -66,13 +66,15 @@ def fftTransfer(data, win_i, N=1024):
         num_peak_list_X_final.append(df[fft_data[0:1024].index(i)])  # 极值点横坐标
 
     hr = df[fft_data[0:1024].index(max(fft_data[0:120]))]*60
-
+    x = fft_data[0:1024].index(max(fft_data[0:120]))  # 最高点对性的索引
     # 当信号很清晰时，主峰很明显，直接只取主峰好了
     # TODO：假峰有时候也会变得高出真峰很多倍
-    # TODO：还是应该按照功率比值阈值来判断吧
-    if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
+    # TODO：还是应该按照功率比值阈值来判断吧,这里应该用一个邻域窗口计算，不应只用一个频率点
+    # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
+    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.30:
         final_hr = [hr]
-    print('最大值占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
+    print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
+    # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
 
     # show一下
     plt.figure('FFT')
@@ -163,13 +165,16 @@ def Arctan_Normalization(data):
 
 # log函数转换归一化
 def Log_Normalization(data):
+    """
+    负值怎么办？
+    """
     data = np.log10(data)/np.log10(max(data))
     return data
 
 def proportional_normalization(value):
     """比例归一
     公式：值/总和
-    :return 值域[0,1]
+    :return 值域[0,1]  又不是全是负数？
     """
     new_value = value / value.sum()
     return new_value
@@ -201,8 +206,9 @@ def SPA(data, Plot=False):
 
 def SPA_detrending(data, mu=1200):
     """
-    平滑先验法去除趋势 (Smoothness Priors Approach, SPA)
-    # 芬兰库奥皮奥大学的Karjalainen博士提出的一种信号非线性去趋势方法：https://m.hanspub.org/journal/paper/28723
+    平滑先验法去除趋势 (Smoothness Priors Approach, SPA) 
+    基于正则化最小二乘法的平滑先验法 http://www.cqvip.com/qk/97964x/201810/7000867680.html
+    # 芬兰库奥皮奥大学的Karjalainen博士提出的一种信号非线性去趋势方法：https://zhuanlan.zhihu.com/p/336228933
     :param mu: 正则化系数
     :return:
     输入是一维list
@@ -248,14 +254,13 @@ def BandPassFilter(data, Plot=False):
 def Filter(data):
     """
     带通滤波器 0.667--2.5Hz
-
     这里假设采样频率为1000hz,信号本身最大的频率为500hz，要滤除100hz以下，
     400hz以上频率成分，即截至频率为100，400hz,则wn1=2*100/1000=0.2，Wn1=0.2
     wn2=2*400/1000=0.8，Wn2=0.8。Wn=[0.2,0.8]
     :return:
     """
-    wn1 = 2 * 0.8 / 30   # origin 0.667
-    wn2 = 2 * 2.0 / 30
+    wn1 = 2 * 0.7 / 30   # origin 0.667
+    wn2 = 2 * 4.0 / 30
     b, a = signal.butter(N=8, Wn=[wn1, wn2], btype='bandpass')     # 8阶
     data = signal.filtfilt(b, a, data)                        # data为要过滤的信号
     data = data.tolist()                                 # ndarray --> list
