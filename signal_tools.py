@@ -71,7 +71,7 @@ def fftTransfer(data, win_i, N=1024):
     # TODO：假峰有时候也会变得高出真峰很多倍
     # TODO：还是应该按照功率比值阈值来判断吧,这里应该用一个邻域窗口计算，不应只用一个频率点
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
-    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.30:
+    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.22:
         final_hr = [hr]
     print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
     # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
@@ -83,7 +83,7 @@ def fftTransfer(data, win_i, N=1024):
     plt.title('窗口{}: Heart Rate estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
-    plt.pause(0.1)	# pause 1 second
+    plt.pause(5)	# pause 1 second
     plt.clf()		# clear the current figure
     return hr, final_hr
 
@@ -300,8 +300,8 @@ def Wavelet(ppg, Plot=False):
     # Create wavelet object and define parameters
     w = pywt.Wavelet('db8')  # 选用Daubechies8小波
     maxlev = pywt.dwt_max_level(len(data), w.dec_len)
-    print("maximum level is " + str(maxlev))
-    threshold = 0.01  # Threshold for filtering
+    print("maximum level is " + str(maxlev))  # ?
+    threshold = 0.01  # Threshold for filtering  去噪阈值
 
     # Decompose into wavelet components, to the level selected:
     coeffs = pywt.wavedec(data, 'db8', level=maxlev)  # 将信号进行小波分解
@@ -313,6 +313,7 @@ def Wavelet(ppg, Plot=False):
     maxtime = mintime + len(data)
 
     datarec = pywt.waverec(coeffs, 'db8')  # 将信号进行小波重构
+    # ?为什么呢？ 为什么过滤掉的信号反而是好的呢？
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
     # plot一下
     if Plot:

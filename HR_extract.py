@@ -30,8 +30,8 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\02\front_ecg.txt")
-    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
+    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\08\front_ecg.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.3.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -40,13 +40,13 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_02front.npy")
-    data = np.load("output/video_signal/BVP_smooth_02front.npy")
+    # data = np.load("output/video_signal/BVP_smooth_08front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
-    # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
+    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.3.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
 
-    Plot = True
+    Plot = False
 
     # show 原始数据
     stools.show_signal(data, Plot)
@@ -73,7 +73,6 @@ if __name__ == "__main__":
     # data = data[3]
 
     data = data.tolist()
-
 
     # ICA计算
     # data = stools.ICA_compute(data)  # numpy.ndarray
@@ -108,6 +107,7 @@ if __name__ == "__main__":
             if abs(averageHR - video_BPM[-1]) > 15:
                 averageHR = video_BPM[-1]
             print('第', win_i, '个时间窗口心率：', averageHR)
+            print('')
 
         win_i = win_i + 1
         video_BPM.append(averageHR)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         realtime_win_end += 1
 
 
-    print('video_BPM:', video_BPM)
+    # print('video_BPM:', video_BPM)
     # 结果评价
     MSE = mean_squared_error(real_BPM, video_BPM)
     MAE = mean_absolute_error(real_BPM, video_BPM)
