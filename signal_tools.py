@@ -70,8 +70,9 @@ def fftTransfer(data, win_i, N=1024):
     # 当信号很清晰时，主峰很明显，直接只取主峰好了
     # TODO：假峰有时候也会变得高出真峰很多倍
     # TODO：还是应该按照功率比值阈值来判断吧,这里应该用一个邻域窗口计算，不应只用一个频率点
+    # TODO：这个判断条件还是不太行，有时候看着像主导频率但占比到不了20%，如何进行判断？
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
-    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.22:
+    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:
         final_hr = [hr]
     print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
     # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
@@ -83,7 +84,7 @@ def fftTransfer(data, win_i, N=1024):
     plt.title('窗口{}: Heart Rate estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
-    plt.pause(5)	# pause 1 second
+    plt.pause(0.1)	# pause 1 second
     plt.clf()		# clear the current figure
     return hr, final_hr
 
@@ -544,7 +545,8 @@ def show_signal(data, Plot=False):
             plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
         # plt.legend()
         plt.title("original regions_mean")
-
+        # plt.show()
+        # cv2.waitKey(10000)
 
 
 # 2 平滑先验法 (Smoothness Priors Approach, SPA)|param mu: 正则化系数|去除趋势，相当于去除低频

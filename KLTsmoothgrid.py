@@ -10,6 +10,33 @@ import dlib
 import signal_tools as stools
 import video_tools as vtools
 
+def cal_iou(box1, box2):
+    """
+    :param box1: = [xmin1, ymin1, xmax1, ymax1]
+    :param box2: = [xmin2, ymin2, xmax2, ymax2]
+    :return: 
+    """
+    [[xmin1,ymin1],[xmax1,ymin1],[xmin1,ymax1],[xmax1,ymax1]] = box1[0,:,:]
+    [[xmin2,ymin2],[xmax2,ymin2],[xmin2,ymax2],[xmax2,ymax2]] = box2[0,:,:]
+    # xmin2, ymin2, xmax2, ymax2 = box2[0,:,:]
+    # 计算每个矩形的面积
+    s1 = (xmax1 - xmin1) * (ymax1 - ymin1)  # b1的面积
+    s2 = (xmax2 - xmin2) * (ymax2 - ymin2)  # b2的面积
+ 
+    # 计算相交矩形
+    xmin = max(xmin1, xmin2)
+    ymin = max(ymin1, ymin2)
+    xmax = min(xmax1, xmax2)
+    ymax = min(ymax1, ymax2)
+ 
+    w = max(0, xmax - xmin)
+    h = max(0, ymax - ymin)
+    a1 = w * h  # C∩G的面积
+    a2 = s1 + s2 - a1
+    iou = a1 / a2  # iou = a1/ (s1 + s2 - a1)
+    return iou
+
+    
 
 # 真正的主功能函数
 def objectTracking(video_path, play_realtime=False):
@@ -68,7 +95,7 @@ def objectTracking(video_path, play_realtime=False):
         frames_draw[i] = frames[i].copy()
 
         # # 判断rectangle是否需要更新
-        iou = stools.cal_iou(temp, bboxs[i])
+        iou = cal_iou(temp, bboxs[i])
         if iou < 0.99:
             temp = bboxs[i]
 
@@ -100,10 +127,10 @@ if __name__ == "__main__":
     detector = dlib.get_frontal_face_detector()  # 人脸检测出矩形框
 
     # 数据集路径
-    video_path = r'I:\DataBase\ir_heartrate_database\videos\06front'
+    video_path = r'I:\DataBase\ir_heartrate_database\videos\07front'
     # video_path = r'I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ppg\3.4'
 
-    save_file_name = '06front'
+    save_file_name = '07front'
     # save_file_name = 'heh3.4'
     start_time = time.time()
 

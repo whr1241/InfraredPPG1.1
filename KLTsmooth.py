@@ -191,11 +191,11 @@ if __name__ == "__main__":
     detector = dlib.get_frontal_face_detector()  # 人脸检测出矩形框
 
     # 数据集路径
-    # video_path = r'I:\DataBase\ir_heartrate_database\videos\02front'
-    video_path = r'I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ppg\3.4'
+    video_path = r'I:\DataBase\ir_heartrate_database\videos\12front'
+    # video_path = r'I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ppg\3.4'
 
-    # save_file_name = '02front'
-    save_file_name = '3heh_ppg_3.4'
+    save_file_name = '12front'
+    # save_file_name = '3heh_ppg_3.4'
     start_time = time.time()
 
     objectTracking(video_path, play_realtime=True)
