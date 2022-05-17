@@ -71,6 +71,7 @@ def fftTransfer(data, win_i, N=1024):
     # TODO：假峰有时候也会变得高出真峰很多倍
     # TODO：还是应该按照功率比值阈值来判断吧,这里应该用一个邻域窗口计算，不应只用一个频率点
     # TODO：这个判断条件还是不太行，有时候看着像主导频率但占比到不了20%，如何进行判断？
+    # TODO：这个东西好像叫信噪比
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
     if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:
         final_hr = [hr]
@@ -314,6 +315,7 @@ def Wavelet(ppg, Plot=False):
     maxtime = mintime + len(data)
 
     datarec = pywt.waverec(coeffs, 'db8')  # 将信号进行小波重构
+    
     # ?为什么呢？ 为什么过滤掉的信号反而是好的呢？
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
     # plot一下
@@ -324,6 +326,7 @@ def Wavelet(ppg, Plot=False):
 
 
 
+# 卡尔曼滤波
 class KalmanFilter(object):
     """
     https://github.com/zziz/kalman-filter
@@ -505,9 +508,12 @@ def get_HR(f_signal, samplerate):  # f, pxx_spec都是251长度一维ndarray
     bpm = 60.0 * hr
     return bpm
 
-
+# TODO:待测试
 # 信噪比
 def SNR(data):
+    """
+    将心率范围的功率与非心率范围的功率进行对比，计算信噪比
+    """
     pass
 
 
@@ -535,8 +541,8 @@ def strided_mean(signal,sampling_time, mean_time):
 
 
 def show_signal(data, Plot=False):
-    color_name = ['r', 'g', 'b', 'c', 'm']
-    level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
+    # color_name = ['r', 'g', 'b', 'c', 'm']
+    # level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
     if Plot:
         plt.figure("original regions_mean")
         x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴

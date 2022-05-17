@@ -36,7 +36,7 @@ def cal_iou(box1, box2):
     iou = a1 / a2  # iou = a1/ (s1 + s2 - a1)
     return iou
 
-    
+
 
 # 真正的主功能函数
 def objectTracking(video_path, play_realtime=False):
@@ -127,10 +127,10 @@ if __name__ == "__main__":
     detector = dlib.get_frontal_face_detector()  # 人脸检测出矩形框
 
     # 数据集路径
-    video_path = r'I:\DataBase\ir_heartrate_database\videos\07front'
+    video_path = r'I:\DataBase\ir_heartrate_database\videos\08front'
     # video_path = r'I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ppg\3.4'
 
-    save_file_name = '07front'
+    save_file_name = '08front'
     # save_file_name = 'heh3.4'
     start_time = time.time()
 
