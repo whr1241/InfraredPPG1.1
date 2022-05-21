@@ -287,6 +287,7 @@ def Wavelet2(ppg):
 
 def Wavelet(ppg, Plot=False):
     """
+    pywt提供的离散小波变换
     小波去噪 https://www.cnblogs.com/sggggr/p/12381164.html
     输入：list
     输出：list
@@ -302,26 +303,51 @@ def Wavelet(ppg, Plot=False):
     # Create wavelet object and define parameters
     w = pywt.Wavelet('db8')  # 选用Daubechies8小波
     maxlev = pywt.dwt_max_level(len(data), w.dec_len)
-    print("maximum level is " + str(maxlev))  # ?
-    threshold = 0.01  # Threshold for filtering  去噪阈值
+    print("maximum level is " + str(maxlev))  # maximum level is 8
+    threshold = 0.01  # Threshold for filtering  去噪阈值 0不行，0.1也不行，0.01可以,0.005也可以
 
-    # Decompose into wavelet components, to the level selected:
-    coeffs = pywt.wavedec(data, 'db8', level=maxlev)  # 将信号进行小波分解
+    # 应该是从最低频到最高频排列的
+    coeffs = pywt.wavedec(data, 'db8', level=maxlev)  # 将信号进行八阶小波分解,得到list，多层一维离散小波变换
+    print("coeffs的type:", type(coeffs))
+    print("coeffs的长度:", len(coeffs))  # 八层小波分解得到九个子频带
+    # print(coeffs)
+    if Plot:
+        plt.figure("CWT")
+        N = len(coeffs)
+        for n, p in enumerate(coeffs):  # array可以，list呢？
+            plt.subplot(N,1,n+1)
+            plt.plot(p, 'g')
+            plt.title("CWT "+str(n))
+            plt.xlabel("frames")
 
+    # 对第二个及以上的高频系数进行滤波
     for i in range(1, len(coeffs)):
-        coeffs[i] = pywt.threshold(coeffs[i], threshold * max(coeffs[i]))  # 将噪声滤波
+        coeffs[i] = pywt.threshold(coeffs[i], threshold * max(coeffs[i]))  # 将噪声滤波，软阈值,小的置0
 
+    # print(coeffs)
     mintime = 0
     maxtime = mintime + len(data)
 
     datarec = pywt.waverec(coeffs, 'db8')  # 将信号进行小波重构
     
-    # ?为什么呢？ 为什么过滤掉的信号反而是好的呢？
+    # ?为什么呢？ 为什么过滤掉的信号反而是好的呢？保留的低频信号代表了大的扰动？
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
     # plot一下
     if Plot:
-        plt.figure('Wavelet')
+        plt.figure("CWT_filter")
+        N = len(coeffs)
+        for n, p in enumerate(coeffs):  # array可以，list呢？
+            plt.subplot(N,1,n+1)
+            plt.plot(p, 'g')
+            plt.title("CWT "+str(n))
+            plt.xlabel("frames")
+
+        plt.figure('Wavelet_roigin')
         plt.plot(data)
+        plt.figure('Wavelet_filter')
+        plt.plot(datarec)
+        plt.figure('Wavelet_out')
+        plt.plot(final_data)
     return final_data.tolist()
 
 

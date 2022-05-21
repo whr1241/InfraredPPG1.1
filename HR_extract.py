@@ -30,8 +30,9 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\16\front_ecg.txt")
+    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\16\front_ecg.txt")
     # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.4.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject1.1.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -40,13 +41,13 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_02front.npy")
-    data = np.load("output/video_signal/BVP_smooth_16front.npy")
+    # data = np.load("output/video_signal/BVP_smooth_16front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
     # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.4.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
-
-    Plot = False
+    data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
+    Plot = True
 
     # show 原始数据
     stools.show_signal(data, Plot)
@@ -61,8 +62,8 @@ if __name__ == "__main__":
     data = stools.BandPassFilter(data, Plot)
 
     # PCA计算
-    data = dc.PCA_compute(data, Plot).T  # PCA后shape是(5368, 5)
-    data = data[0]
+    # data = dc.PCA_compute(data, Plot).T  # PCA后shape是(5368, 5)
+    data = data[2]
 
     # EMD计算,效果奇差，暂时不用
     # data = dc.EMD_compute(data, Plot)
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     # data = data[3].tolist()
     # print(data)
 
-    # 小波去噪
+    # 小波去噪，效果特别好
     data = stools.Wavelet(data, Plot)
 
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         realtime_win_end += 1
 
 
-    print('video_BPM:', video_BPM)
+    # print('video_BPM:', video_BPM)
     # 结果评价
     MSE = mean_squared_error(real_BPM, video_BPM)
     MAE = mean_absolute_error(real_BPM, video_BPM)

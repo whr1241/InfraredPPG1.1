@@ -46,7 +46,7 @@ def PCA_compute(data, Plot=False):
     if Plot:
         plt.figure("PCA")
         N = data.shape[0]
-        for n, p in enumerate(data):
+        for n, p in enumerate(data):   
             plt.subplot(N,1,n+1)
             plt.plot(p, 'g')
             plt.title("PCA "+str(n))
