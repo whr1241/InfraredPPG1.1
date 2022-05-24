@@ -52,7 +52,8 @@ def objectTracking(video_path, play_realtime=False):
     temp = np.empty((1,), dtype=np.ndarray)  # 定义空数组
 
     for i in range(start_index, end_index):
-        frame = cv2.imread(video_path + r'\{}.pgm'.format(i))  # 三通道
+        # frame = cv2.imread(video_path + r'\{}.pgm'.format(i))  # 三通道
+        frame = cv2.imread(video_path + r'\test{}.pgm'.format(i))  # 三通道
         print("Processing frame:", i-start_index+1, "/", n_frame)
         frames[i-start_index] = np.array(frame)
 
@@ -191,11 +192,12 @@ if __name__ == "__main__":
     detector = dlib.get_frontal_face_detector()  # 人脸检测出矩形框
 
     # 数据集路径
-    # video_path = r'I:\DataBase\ir_heartrate_database\videos\12front'
+    video_path = r'I:\DataBase\ir_heartrate_database\videos\17front'
     # video_path = r'I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ppg\3.4'
-    video_path = r'I:\WHR\Dataset\1-Myself\5-haoran\video\subject2.4'
+    # video_path = r'I:\WHR\Dataset\1-Myself\5-haoran\video\subject2.4'
 
-    save_file_name = 'subject2.4'
+    save_file_name = '17front'
+    # save_file_name = 'subject2.4'
     # save_file_name = '3heh_ppg_3.4'
     start_time = time.time()
 
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     end_time = time.time()
     duration = end_time - start_time
     print('duration:', duration)
-    raw_signal = mean_gray.tolist()  # 保存比人脸稍微小一些的尺度信号
+    raw_signal = mean_gray.tolist()  
     np.save("./Output/video_signal/BVP_smooth_{}.npy".format(save_file_name), raw_signal)
 
     # plot一下原始信号

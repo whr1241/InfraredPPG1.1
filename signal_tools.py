@@ -117,6 +117,15 @@ def FindPeak_window(data, win_i):
 
 
 
+# STFT短时傅里叶变换
+def STFT(data, Plot=False):
+    """
+    待完成
+    """
+    signal.stft()
+
+
+
 # 归一化
 def Normalization(data, Plot=False):
     """

@@ -9,25 +9,70 @@
 from scipy import signal
 import matplotlib.pyplot as plt
 import numpy as np
+import signal_tools as stools
+import decomposition as dc
 
-# stft
-# 产生一个测试信号，振幅为2的正弦波，其频率在3kHZ缓慢调制，振幅以指数形式下降的白噪声
-fs = 10e3
-N = 1e5
-amp = 2 * np.sqrt(2)
-noise_power = 0.01 * fs / 2
-time = np.arange(N)/float(fs)
-mod = 500 * np.cos(2*np.pi*0.25*time)
-carrier = amp * np.sin(2*np.pi*3e3*time+mod)
-noise = np.random.normal(scale=np.sqrt(noise_power), size=time.shape)
-noise *= np.exp(-time/5)
-x = carrier + noise
-
-# 计算并绘制STFT的大小
-f, t, Zxx = signal.stft(x, fs, nperseg=1000)
-plt.pcolormesh(t, f, np.abs(Zxx), vmin = 0, vmax = amp)
-plt.title('STFT Magnitude')
-plt.ylabel('Frequency [Hz]')
-plt.xlabel('Time [sec]')
+# 对数据进行分析，生成插图
+# data = np.load("output/video_signal/BVP_smooth_17front.npy")
+data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
+plt.figure("original regions_mean")
+# x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
+for i in range(data.shape[0]):
+    # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+    # plt.plot(data[i, :])  # 绘制第i行,并贴出标签
+    plt.plot(data[i, 3500:4500])  # 绘制第i行,并贴出标签
+# plt.legend()
+plt.title("original regions_mean")
 plt.show()
-    
+
+
+# SPA趋势去除
+data = stools.SPA(data, Plot=False)
+for i in range(data.shape[0]):
+    # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+    # plt.plot(data[i, :])  # 绘制第i行,并贴出标签
+    plt.plot(data[i, 3500:4500])  # 绘制第i行,并贴出标签
+# plt.legend()
+plt.title("SPA")
+plt.show()
+
+
+# Filter
+data = stools.BandPassFilter(data, Plot=False)
+for i in range(data.shape[0]):
+    # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+    # plt.plot(data[i, :])  # 绘制第i行,并贴出标签
+    plt.plot(data[i, 3500:4500])  # 绘制第i行,并贴出标签
+# plt.legend()
+plt.title("bandpass filter")
+plt.show()
+
+# data = data[3]
+# plt.plot(data[3500:4500])  # 绘制第i行,并贴出标签
+# # plt.legend()
+# plt.title("Filter0")
+# plt.show()
+
+
+# PCA计算
+data = dc.PCA_compute(data, Plot=False).T  # PCA后shape是(5368, 5)
+for i in range(data.shape[0]):
+    # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+    # plt.plot(data[i, :])  # 绘制第i行,并贴出标签
+    plt.plot(data[i, 3500:4500])  # 绘制第i行,并贴出标签
+# plt.legend()
+plt.title("PCA")
+plt.show()
+
+
+data = data[0]
+plt.plot(data[3500:4500])  # 绘制第i行,并贴出标签
+# plt.legend()
+plt.title("PCA0")
+plt.show()
+
+data = data.tolist()
+data = stools.Wavelet(data, Plot=False)
+plt.plot(data[3500:4500])  # 绘制第i行,并贴出标签
+plt.title("DWT")
+plt.show()
