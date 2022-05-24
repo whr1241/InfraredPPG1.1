@@ -82,10 +82,10 @@ def fftTransfer(data, win_i, N=1024):
     plt.figure('FFT')
     plt.plot(df, fft_data)
     plt.axis([0, 5, 0, np.max(fft_data)*2])
-    plt.title('窗口{}: Heart Rate estimate: {:.2f}'.format(win_i, hr))
+    plt.title('Window{}: previous HR estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
-    plt.pause(0.1)	# pause 1 second
+    plt.pause(1)	# pause 1 second
     plt.clf()		# clear the current figure
     return hr, final_hr
 
