@@ -30,8 +30,8 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\16\front_ecg.txt")
-    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
+    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\17\front_ecg.txt")
+    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
     # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject1.1.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
@@ -41,9 +41,9 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_02front.npy")
-    # data = np.load("output/video_signal/BVP_smooth_16front.npy")
+    data = np.load("output/video_signal/BVP_smooth_17front.npy")
     # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
-    data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
+    # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
     # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
     # data = np.vstack([np.array(data), np.array(data1)])
     # data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
