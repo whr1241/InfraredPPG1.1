@@ -85,7 +85,7 @@ def fftTransfer(data, win_i, N=1024):
     plt.title('Window{}: previous HR estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
-    plt.pause(1)	# pause 1 second
+    plt.pause(0.5)	# pause 1 second
     plt.clf()		# clear the current figure
     return hr, final_hr
 
