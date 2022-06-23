@@ -25,14 +25,14 @@ def find_nearest(data, target):
 
 if __name__ == "__main__":
 
-    # 支持中文
-    plt.rcParams['font.sans-serif'] = ['SimHei'] # 步骤一（替换sans-serif字体）
-    plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
+    # 支持中文，会影响全局的插图字体设置
+    # plt.rcParams['font.sans-serif'] = ['SimHei'] # 步骤一（替换sans-serif字体）
+    # plt.rcParams['axes.unicode_minus'] = False  # 步骤二（解决坐标轴负数的负号显示问题）
 
     # 真值
-    ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\11\front_ecg.txt")
+    # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\11\front_ecg.txt")
     # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
-    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject10.4.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject1.1.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -40,13 +40,9 @@ if __name__ == "__main__":
     bpm = out['heart_rate']  # 实时心率，对应时间的心率，长176
 
     # 原始信号
-    # data = np.load("output/video_signal/BVP_02front.npy")
-    data = np.load("output/video_signal/BVP_smooth_11front.npy")
-    # data = np.load("output/video_signal/BVP_3heh_ppg3.4.npy")
+    # data = np.load("output/video_signal/BVP_smooth_11front.npy")
     # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
-    # data = np.load("output/video_signal/BVP_grid_heh3.0.npy")
-    # data = np.vstack([np.array(data), np.array(data1)])
-    # data = np.load(r"output\video_signal\BVP_smooth_subject10.4.npy")
+    data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
     Plot = False
 
     # show 原始数据

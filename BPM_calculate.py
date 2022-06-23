@@ -3,7 +3,7 @@
 @file        : BPM_calculate.py
 @time        : 2022/03/07 20:49:50
 @author      : Lin-sudo
-@description : 
+@description : 庆麟写的程序，用于计算BPM
 '''
 import numpy as np
 import matplotlib.pyplot as plt

@@ -3,7 +3,7 @@
 @file        : BVP_calculate.py
 @time        : 2022/03/07 20:01:22
 @author      : Lin-sudo
-@description : 3Dlandmark[wholeface] + PSD
+@description : 3Dlandmark[wholeface] + PSD，庆麟写的程序
 '''
 import time
 from cv2 import cvtColor

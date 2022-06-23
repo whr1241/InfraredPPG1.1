@@ -73,20 +73,25 @@ def fftTransfer(data, win_i, N=1024):
     # TODO：这个判断条件还是不太行，有时候看着像主导频率但占比到不了20%，如何进行判断？
     # TODO：这个东西好像叫信噪比
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
-    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:
+    if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:  # 取主峰所在10/512的频域范围，512代表15hz
         final_hr = [hr]
     print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
     # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
 
     # show一下
-    plt.figure('FFT')
+    plt.figure('FFT', figsize=(5, 4), dpi=200)  # 待验证
     plt.plot(df, fft_data)
     plt.axis([0, 5, 0, np.max(fft_data)*2])
+    plt.xlabel("Frequency")
+    plt.ylabel("Amplitude")
     plt.title('Window{}: previous HR estimate: {:.2f}'.format(win_i, hr))
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
-    plt.pause(0.1)	# pause 1 second
-    plt.clf()		# clear the current figure
+    # plt.annotate  # 标注文本，待使用
+    plt.savefig('output/picture_video/{}.png'.format(win_i))  # 保存所有图片
+    plt.pause(0.1)	# pause 1 second 
+    # plt.savefig('fft_window{}.png'.format(win_i))  # 待配置
+    plt.clf()		#  清除当前 figure 的所有axes，但是不关闭这个 window，所以能继续复用于其他的 plot
     return hr, final_hr
 
 
@@ -275,6 +280,20 @@ def Filter(data):
     b, a = signal.butter(N=8, Wn=[wn1, wn2], btype='bandpass')     # 8阶
     data = signal.filtfilt(b, a, data)                        # data为要过滤的信号
     data = data.tolist()                                 # ndarray --> list
+    return data
+
+
+def ButterworthFilter(data):
+    """
+    for Green method in 2008
+    input: list
+    output: list
+    """
+    wn1 = 2 * 0.8 / 30  # origin 0.667
+    wn2 = 2 * 6.0 / 30  # 到底是2还是6？
+    b, a = signal.butter(N=4, Wn=[wn1, wn2], btype='bandpass')     # 4阶
+    data = signal.filtfilt(b, a, data)
+    data = data.tolist()
     return data
 
 

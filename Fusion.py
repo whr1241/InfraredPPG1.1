@@ -4,7 +4,7 @@
 # @Author     : wanghaoran
 # @Site       : SCNU
 # @File       : Fusion.py
-# @description: PPG和BCG的融合
+# @description: PPG和BCG的融合尝试
 # @Software   : PyCharm
 import numpy as np
 from biosppy.signals import ecg
