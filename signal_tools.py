@@ -67,18 +67,20 @@ def fftTransfer(data, win_i, N=1024):
 
     hr = df[fft_data[0:1024].index(max(fft_data[0:120]))]*60
     x = fft_data[0:1024].index(max(fft_data[0:120]))  # 最高点对性的索引
+
     # 当信号很清晰时，主峰很明显，直接只取主峰好了
     # TODO：假峰有时候也会变得高出真峰很多倍
     # TODO：还是应该按照功率比值阈值来判断吧,这里应该用一个邻域窗口计算，不应只用一个频率点
     # TODO：这个判断条件还是不太行，有时候看着像主导频率但占比到不了20%，如何进行判断？
     # TODO：这个东西好像叫信噪比
+
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
     if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:  # 取主峰所在10/512的频域范围，512代表15hz
         final_hr = [hr]
     print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
     # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
 
-    # show一下
+    # show一下并保存每个窗口的图像
     plt.figure('FFT', figsize=(5, 4), dpi=200)  # 待验证
     plt.plot(df, fft_data)
     plt.axis([0, 5, 0, np.max(fft_data)*2])
@@ -89,7 +91,7 @@ def fftTransfer(data, win_i, N=1024):
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
     # plt.annotate  # 标注文本，待使用
     plt.savefig('output/picture_video/{}.png'.format(win_i))  # 保存所有图片
-    plt.pause(0.1)	# pause 1 second 
+    plt.pause(0.01)	# pause 1 second 
     # plt.savefig('fft_window{}.png'.format(win_i))  # 待配置
     plt.clf()		#  清除当前 figure 的所有axes，但是不关闭这个 window，所以能继续复用于其他的 plot
     return hr, final_hr
@@ -282,7 +284,6 @@ def Filter(data):
     data = data.tolist()                                 # ndarray --> list
     return data
 
-
 def ButterworthFilter(data):
     """
     for Green method in 2008
@@ -296,6 +297,18 @@ def ButterworthFilter(data):
     data = data.tolist()
     return data
 
+def Bandpass(data, w1, w2, N):
+    """
+    通用带通滤波函数
+    输入：data：一维list数据；w1和w2：两个截止频率；N：巴特沃斯阶数
+    输出：data：一维list数据
+    """
+    wn1 = 2 * w1 / 30  
+    wn2 = 2 * w2 / 30  
+    b, a = signal.butter(N, Wn=[wn1, wn2], btype='bandpass')
+    data = signal.filtfilt(b, a, data)
+    data = data.tolist()
+    return data
 
 
 def Wavelet2(ppg):
@@ -315,7 +328,7 @@ def Wavelet2(ppg):
 
 def Wavelet(ppg, Plot=False):
     """
-    pywt提供的离散小波变换
+    pywt提供的离散小波变换，这里选用Daubechies8小波
     小波去噪 https://www.cnblogs.com/sggggr/p/12381164.html
     输入：list
     输出：list

@@ -182,11 +182,16 @@ def EMD_compute(data, Plot=False):
     """
     EMD是输入一维信号array，分解为多个信号
     可以考虑一下输出裁剪一下
+    imf的个数好像不是自己能确定的，而是输入信号特征决定的
     """
-    IMF = EMD().emd(data)  # 返回array(7, 5368)
+    emd = EMD()
+    emd.emd(data)
+    IMF, res = emd.get_imfs_and_residue()
+
+    # IMF = EMD().emd(data)  # 返回array(7, 5368)
     # 画出图
     if Plot:
-        N = IMF.shape[0] + 1  
+        N = IMF.shape[0] + 2  
         plt.figure('EMD')
         plt.subplot(N,1,1)
         plt.plot(data, 'r')
@@ -197,7 +202,12 @@ def EMD_compute(data, Plot=False):
             plt.plot(imf, 'g')
             plt.title("IMF "+str(n+1))
             plt.xlabel("Time [s]")
-        plt.tight_layout()  # 自动调整子图间距
+
+        plt.subplot(N,1,N)
+        plt.plot(res, 'b')
+        plt.title("residual signal")
+        plt.xlabel("Time [s]")
+        # plt.tight_layout()  # 自动调整子图间距
     return IMF  # n个行信号array
 
 

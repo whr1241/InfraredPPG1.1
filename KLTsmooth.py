@@ -125,7 +125,7 @@ def multiscale_value(xmin, ymin, boxw, boxh, frame):
     """
     得到多个尺度的均值
     """
-    frame1 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    frame1 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # 转化后还有几个通道？
     left = xmin
     right = xmin + boxw
     top = ymin
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     duration = end_time - start_time
     print('duration:', duration)
     raw_signal = mean_gray.tolist()  
-    np.save("./Output/video_signal/BVP_smooth_{}.npy".format(save_file_name), raw_signal)
+    np.save("./Output/video_signal/BVP_smooth_{}.npy".format(save_file_name), raw_signal)  # 以list保存
 
     # plot一下原始信号
     color_name = ['r', 'g', 'b', 'c', 'm']

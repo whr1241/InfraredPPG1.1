@@ -31,8 +31,7 @@ if __name__ == "__main__":
 
     # 真值
     # ecgdata = np.loadtxt(r"I:\DataBase\ir_heartrate_database\ecg\11\front_ecg.txt")
-    # ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\2022.4.21\3heh\3heh_ecg\3.0.txt")
-    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject1.1.txt")
+    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject3.3.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
@@ -41,8 +40,7 @@ if __name__ == "__main__":
 
     # 原始信号
     # data = np.load("output/video_signal/BVP_smooth_11front.npy")
-    # data = np.load("output/video_signal/BVP_smooth_3heh_ppg3.0.npy")
-    data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
+    data = np.load(r"output\video_signal\BVP_smooth_subject3.3.npy")
     Plot = False
 
     # show 原始数据
@@ -139,9 +137,9 @@ if __name__ == "__main__":
     # scatter散点图
     fig, ax = plt.subplots(1, 1)
     # plt.figure("scatter")
-    plt.title("PPG ECG 方法之比")
-    plt.xlabel("心率(bpm)")
-    plt.ylabel("心率(bpm)")
+    plt.title("PPG ECG compare")
+    plt.xlabel("HR(bpm)")
+    plt.ylabel("HR(bpm)")
     plt.scatter(video_BPM, real_BPM)  # 生成一个scatter散点图
     ax.plot((0, 1), (0, 1), transform=ax.transAxes, ls='--', c='k', label="1:1 line")
 
