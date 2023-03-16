@@ -22,7 +22,6 @@ from PyEMD import EEMD, EMD, Visualisation
 PCA
 SVD
 # todo:EEMD
-等
 """
 # 3主成分分析,得到一维主位置信号(降维)
 def PCA_compute(data, Plot=False):

@@ -4,7 +4,7 @@
 # @Author     : wanghaoran
 # @Site       : SCNU
 # @File       : video_tools.py
-# @Description: 关于视频初步处理的函数
+# @Description: 关于视频初步处理的函数工具集
 # @Software   : PyCharm
 import dlib
 import cv2

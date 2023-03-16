@@ -4,7 +4,7 @@
 # @Author     : wanghaoran
 # @Site       : SCNU
 # @File       : 1test.py
-# @description: 
+# @description: 生成文章插图
 # @Software   : PyCharm
 from scipy import signal
 import matplotlib.pyplot as plt
@@ -12,7 +12,6 @@ import numpy as np
 import signal_tools as stools
 import decomposition as dc
 
-# 对数据进行分析，生成插图
 # data = np.load("output/video_signal/BVP_smooth_17front.npy")
 data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
 plt.figure("original regions_mean")

@@ -77,11 +77,11 @@ def fftTransfer(data, win_i, N=1024):
     # if num_peak_list_Y_final[0]/sum(fft_data[0:512]) > 0.07:
     if sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]) > 0.20:  # 取主峰所在10/512的频域范围，512代表15hz
         final_hr = [hr]
-    print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
+    # print('最大值窗口占总功率比值：', sum(fft_data[(x-5):(x+5)])/sum(fft_data[0:512]))
     # print('最大值所在窗口功率占总功率比值：', num_peak_list_Y_final[0]/sum(fft_data[0:512]))
 
     # show一下并保存每个窗口的图像
-    plt.figure('FFT', figsize=(5, 4), dpi=200)  # 待验证
+    plt.figure('FFT', figsize=(5, 4), dpi=150)  # 待验证
     plt.plot(df, fft_data)
     plt.axis([0, 5, 0, np.max(fft_data)*2])
     plt.xlabel("Frequency")
@@ -90,8 +90,8 @@ def fftTransfer(data, win_i, N=1024):
     for ii in range(len(num_peak_list_Y_final)):  # 画出5个极值点
         plt.plot(num_peak_list_X_final[ii], num_peak_list_Y_final[ii],'*',markersize=10)
     # plt.annotate  # 标注文本，待使用
-    plt.savefig('output/picture_video/{}.png'.format(win_i))  # 保存所有图片
-    plt.pause(0.01)	# pause 1 second 
+    # plt.savefig('output/picture_video/{}.png'.format(win_i))  # 保存所有图片
+    plt.pause(0.01)	# pause time 
     # plt.savefig('fft_window{}.png'.format(win_i))  # 待配置
     plt.clf()		#  清除当前 figure 的所有axes，但是不关闭这个 window，所以能继续复用于其他的 plot
     return hr, final_hr
@@ -373,7 +373,9 @@ def Wavelet(ppg, Plot=False):
     
     # ?为什么呢？ 为什么过滤掉的信号反而是好的呢？保留的低频信号代表了大的扰动？
     final_data = np.array(data[mintime:maxtime]) - np.array(datarec[mintime:maxtime])
+    
     # plot一下
+    x_time = np.linspace(0, 180, 5367)
     if Plot:
         plt.figure("CWT_filter")
         N = len(coeffs)
@@ -383,12 +385,20 @@ def Wavelet(ppg, Plot=False):
             plt.title("CWT "+str(n))
             plt.xlabel("frames")
 
-        plt.figure('Wavelet_roigin')
-        plt.plot(data)
+        plt.figure('Wavelet_roigin', figsize=(8, 4), dpi=300)
+        plt.plot(x_time, data, linewidth=0.5)
+        plt.xlabel("Time(sec)")
+        plt.ylabel("Amplitude")
+        plt.savefig('output/before_DWT_subject3.1.png')
+
         plt.figure('Wavelet_filter')
         plt.plot(datarec)
-        plt.figure('Wavelet_out')
-        plt.plot(final_data)
+
+        plt.figure('Wavelet_out', figsize=(8, 4), dpi=300)
+        plt.xlabel("Time(sec)")
+        plt.ylabel("Amplitude")
+        plt.plot(x_time, final_data, linewidth=0.5)
+        plt.savefig('output/after_DWT_subject3.1.png')
     return final_data.tolist()
 
 

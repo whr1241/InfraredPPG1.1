@@ -1,4 +1,11 @@
-# 提取出心率
+'''
+Author: whr1241 2735535199@qq.com
+Date: 2022-04-19 14:34:56
+LastEditors: whr1241 2735535199@qq.com
+LastEditTime: 2022-11-04 16:05:43
+FilePath: \InfraredPPG1.1\Others\Video_processor.py
+Description: 提取出心率
+'''
 import time
 import cv2
 import numpy as np

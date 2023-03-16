@@ -2,10 +2,16 @@
 Author: whr1241 2735535199@qq.com
 Date: 2022-04-19 14:34:56
 LastEditors: whr1241 2735535199@qq.com
-LastEditTime: 2022-06-16 22:15:57
+LastEditTime: 2023-03-12 14:01:44
 FilePath: \InfraredPPG1.1\0test.py
-Description: 性能分析
+Description: 对视频数据集进行处理
 '''
-import cProfile
-import Green
-cProfile.run(filename = 'Green.py', sort=-1)
+import cv2
+import dlib
+
+
+
+if __name__ == '__main__':
+    frames = cv2.videocapture(0)
+    if not frames.isOpened():
+        print()

@@ -8,7 +8,8 @@
 # @Software   : PyCharm
 import numpy as np
 import matplotlib.pyplot as plt
-
+import math
+import pandas as pd
 
 def bland_altman_plot(data1, data2, *args, **kwargs):
     """
@@ -27,9 +28,32 @@ def bland_altman_plot(data1, data2, *args, **kwargs):
     md        = np.mean(diff)                   # Mean of the difference
     sd        = np.std(diff, axis=0)            # Standard deviation of the difference
 
-    plt.figure("bland", figsize=(7, 7))
+    plt.figure("bland", figsize=(7, 4))
     plt.title('Bland-altman plot')
     plt.scatter(mean, diff, *args, **kwargs)
     plt.axhline(md,           color='gray', linestyle='--')
     plt.axhline(md + 1.96*sd, color='gray', linestyle='--')
     plt.axhline(md - 1.96*sd, color='gray', linestyle='--')
+
+
+# 计算相关系数函数
+def PearsonFirst(A,B):
+    '''
+    https://blog.csdn.net/small__roc/article/details/123519616
+    '''
+    df = pd.DataFrame({"A":A,"B":B})
+    X = df['A']
+    Y = df['B']
+    XY = X*Y
+    EX = X.mean()
+    EY = Y.mean()
+    EX2 = (X**2).mean()
+    EY2 = (Y**2).mean()
+    EXY = XY.mean()
+    numerator = EXY - EX*EY                                 # 分子
+    denominator = math.sqrt(EX2-EX**2)*math.sqrt(EY2-EY**2) # 分母
+    
+    if denominator == 0:
+        return 'NaN'
+    rhoXY = numerator/denominator
+    return rhoXY
