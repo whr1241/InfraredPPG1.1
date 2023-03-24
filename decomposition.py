@@ -44,8 +44,8 @@ def PCA_compute(data, Plot=False):
     # plot出来
     if Plot:
         plt.figure("PCA")
-        N = data.shape[0]
-        for n, p in enumerate(data):   
+        N = projected.shape[0]
+        for n, p in enumerate(projected):   
             plt.subplot(N,1,n+1)
             plt.plot(p, 'g')
             plt.title("PCA "+str(n))
@@ -225,13 +225,16 @@ def EEMD_compute(data, Plot=False):
         plt.figure('EEMD')
         plt.subplot(N,1,1)
         plt.plot(data, 'r')
-        plt.title("Input signal")
-        plt.xlabel("Time [s]")
+        plt.yticks([]) # 不显示y轴
+        # plt.title("Input signal")
+        
         for n, imf in enumerate(E_IMFs):
             plt.subplot(N,1,n+2)
             plt.plot(imf, 'g')
-            plt.title("IMF "+str(n+1))
-            plt.xlabel("Time [s]")
+            plt.yticks([]) # 不显示y轴
+            # plt.title("IMF "+str(n+1))
+            # plt.xlabel("Frames")
+        plt.xlabel("Frames")
         plt.tight_layout()  # 自动调整子图间距
 
     return E_IMFs  # 行信号array

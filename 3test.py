@@ -2,7 +2,7 @@
 Author: whr1241 2735535199@qq.com
 Date: 2023-03-10 16:00:55
 LastEditors: whr1241 2735535199@qq.com
-LastEditTime: 2023-03-12 13:07:10
+LastEditTime: 2023-03-18 21:56:34
 FilePath: \InfraredPPG1.1\3test.py
 Description: Dlib人脸检测和特征点检测标注
 '''
@@ -29,9 +29,11 @@ if __name__ == '__main__':
         cv2.circle(show_pic, pt_pos, 1, (255, 255, 0), 2)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(show_pic, str(i), pt_pos, font, 0.3, (0, 0, 255), 1,cv2.LINE_AA)
+        cv2.putText(show_pic, str(i), pt_pos, font, 0.4, (0, 0, 255), 1,cv2.LINE_AA)
         i = i + 1
     
     cv2.imshow('人脸和特征点', show_pic)
     cv2.waitKey(0)
+    print(show_pic.shape)
+    cv2.imwrite('output/FaceFeatures.jpg', show_pic[:900, :1129])
     cv2.destroyAllWindows()

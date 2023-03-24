@@ -210,8 +210,8 @@ def SPA(data, Plot=False):
         data_final[i] = np.array(SPA_detrending(data[i].tolist()))
     if Plot:
         plt.figure("SPA")
-        N = data.shape[0]
-        for n, spa in enumerate(data):
+        N = data_final.shape[0]
+        for n, spa in enumerate(data_final):
             plt.subplot(N,1,n+1)
             plt.plot(spa, 'g')
             plt.title("SPA "+str(n))
@@ -258,7 +258,7 @@ def BandPassFilter(data, Plot=False):
     if Plot:
         plt.figure("Filter")
         N = data.shape[0]
-        for n, fil in enumerate(data):
+        for n, fil in enumerate(data_final):
             plt.subplot(N,1,n+1)
             plt.plot(fil, 'g')
             plt.title("Filter "+str(n))
@@ -385,7 +385,7 @@ def Wavelet(ppg, Plot=False):
             plt.title("CWT "+str(n))
             plt.xlabel("frames")
 
-        plt.figure('Wavelet_roigin', figsize=(8, 4), dpi=300)
+        plt.figure('Wavelet_origin', figsize=(4, 2), dpi=300)
         plt.plot(x_time, data, linewidth=0.5)
         plt.xlabel("Time(sec)")
         plt.ylabel("Amplitude")
@@ -394,7 +394,7 @@ def Wavelet(ppg, Plot=False):
         plt.figure('Wavelet_filter')
         plt.plot(datarec)
 
-        plt.figure('Wavelet_out', figsize=(8, 4), dpi=300)
+        plt.figure('Wavelet_out', figsize=(4, 2), dpi=300)
         plt.xlabel("Time(sec)")
         plt.ylabel("Amplitude")
         plt.plot(x_time, final_data, linewidth=0.5)
@@ -655,7 +655,7 @@ def SPA_detrending1(data, mu=1200):
 
 
 
-# FFT变换,计算脉搏率并展示结果
+# FFT变换,计算脉搏率并展示结果，输入list
 def fftTransfer1(filtered, framerate=30):  # 输入数据和帧率:信号抽样率
     n = 512
     if len(filtered) < n:
