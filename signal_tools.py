@@ -618,15 +618,14 @@ def strided_mean(signal,sampling_time, mean_time):
 
 
 def show_signal(data, Plot=False):
-    # color_name = ['r', 'g', 'b', 'c', 'm']
-    # level_name = ['level_e_mean', 'level_0_mean', 'level_1_mean', 'level_2_mean', 'level_3_mean']
+    color_name = ['r', 'g', 'b', 'c', 'm']
+    level_name = ['1', '2', '3', '4', '5']
     if Plot:
         plt.figure("original regions_mean")
         x = np.arange(0, data.shape[1])  # 返回一个有终点和起点的固定步长的排列做x轴
         for i in range(data.shape[0]):
-            # plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
-            plt.plot(x, data[i, :])  # 绘制第i行,并贴出标签
-        # plt.legend()
+            plt.plot(x, data[i, :], color=color_name[i], label=level_name[i])  # 绘制第i行,并贴出标签
+        plt.legend()
         plt.title("original regions_mean")
         # plt.show()
         # cv2.waitKey(10000)
@@ -657,7 +656,7 @@ def SPA_detrending1(data, mu=1200):
 
 # FFT变换,计算脉搏率并展示结果，输入list
 def fftTransfer1(filtered, framerate=30):  # 输入数据和帧率:信号抽样率
-    n = 512
+    n = 1024
     if len(filtered) < n:
         for _ in range(n - len(filtered)):  # 补零补至N点
             filtered.append(0)

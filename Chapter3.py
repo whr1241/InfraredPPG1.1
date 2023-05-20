@@ -2,7 +2,7 @@
 Author: whr1241 2735535199@qq.com
 Date: 2023-03-22 14:30:14
 LastEditors: whr1241 2735535199@qq.com
-LastEditTime: 2023-03-24 14:03:11
+LastEditTime: 2023-03-31 02:29:50
 FilePath: \InfraredPPG1.1\Chapter3.py
 Description: 第三章的实验，生成数据
 '''
@@ -26,15 +26,15 @@ import h5py
 
 if __name__ == '__main__':
     # 加载并预处理ECG信号
-    save_file_name = 'Face04front'
-    ecgdata = np.loadtxt(r"I:\WHR\0-Dataset\DataBase\ir_heartrate_database\ecg\17\front_ecg.txt")
+    save_file_name = 'EEMDFace01front'
+    ecgdata = np.loadtxt(r"D:\1maydaystudy\0Github\ecg\09\front_ecg.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
     times = out['heart_rate_ts']   # times是时间，长176
     bpm = out['heart_rate']  # 实时心率，对应时间的心率，长176
     # 加载BVP信号
-    data = np.load(r"output\video_signal3\17front.npy")
+    data = np.load(r"output\video_signal3\09front.npy")
     
     # data = data[:, 1000:2500]
     # 信号处理
@@ -45,21 +45,22 @@ if __name__ == '__main__':
                 data[i, j] = (data[i, j-1]+data[i, j+1])/2
 
     Plot = True
+    print(data.shape)
     stools.show_signal(data, Plot)  # 展示一下五个原始信号
-    # SPA趋势去除
-    data = stools.SPA(data, Plot)
-    # Filter滤波
-    data = stools.BandPassFilter(data, Plot)
     
-    data = data[0]
-
+    data = stools.SPA(data, Plot)  # SPA趋势去除
+    
+    data = stools.BandPassFilter(data, Plot)  # Filter滤波
+    
+    data = data[0]  # 选择ROI信号
+    
     # # 试一下EMD
     # data = dc.EMD_compute(data, Plot)
     # data = data[2]
     data = dc.EEMD_compute(data, Plot)  # numpy.ndarray
-    data = data[3]
-    # data = data[2:4].sum(axis=0)
-    print(data.shape)
+    # data = data[2]
+    data = data[2:4].sum(axis=0)
+
     data = data.tolist()  # numpy格式转化为list格式
 
     # 实时心率计算
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     plt.ylabel("heart rate(bpm)")
     plt.plot(video_BPM, label="iPPG")
     plt.plot(real_BPM, label="ECG")
-    plt.legend(loc='lower left')  # 展示每个数据对应的图像名称
+    plt.legend(loc='upper right')  # 展示每个数据对应的图像名称
     # plt.savefig('output/TF_subject3.1.png')
     plt.show()
     

@@ -2,7 +2,7 @@
 Author: whr1241 2735535199@qq.com
 Date: 2022-04-19 14:34:56
 LastEditors: whr1241 2735535199@qq.com
-LastEditTime: 2023-03-21 21:46:02
+LastEditTime: 2023-03-29 13:48:49
 FilePath: \InfraredPPG1.1\HR_extract.py
 Description: 最开始的实时心率
 '''
@@ -42,16 +42,16 @@ if __name__ == "__main__":
 
     # save_file_name = 'subject10.2'
     # 载入ECG真值，并进行处理
-    # ecgdata = np.loadtxt(r"I:\WHR\0-Dataset\DataBase\ir_heartrate_database\ecg\17\front_ecg.txt")
-    ecgdata = np.loadtxt(r"I:\WHR\Dataset\1-Myself\5-haoran\ecg\subject3.1.txt")
+    ecgdata = np.loadtxt(r"D:\1maydaystudy\0Github\ecg\15\front_ecg.txt")
+    # ecgdata = np.loadtxt(r"D:\1maydaystudy\0Github\ecg2\subject1.1.txt")
     ecg_signal = ecgdata[:, 0]  # type? 应该是list
     ecg_signal = ecg_signal[1000*1:]
     out = ecg.ecg(ecg_signal, sampling_rate=1000., show=False)  # biosppy库功能 Tuple,应该是默认采样率1000
     times = out['heart_rate_ts']   # times是时间，长176
     bpm = out['heart_rate']  # 实时心率，对应时间的心率，长176
     # 载入原始PPG时间信号
-    # data = np.load("output/video_signal/BVP_smooth_17front.npy")
-    data = np.load(r"output\video_signal\BVP_smooth_subject3.1.npy")
+    data = np.load("output/video_signal/BVP_smooth_15front.npy")
+    # data = np.load(r"output\video_signal\BVP_smooth_subject1.1.npy")
     
     # 是否绘制出来图形
     Plot = False
@@ -158,6 +158,6 @@ if __name__ == "__main__":
     plt.ylabel("heart rate(bpm)")
     plt.plot(video_BPM, label="iPPG")
     plt.plot(real_BPM, label="ECG")
-    plt.legend(loc='lower left')  # 展示每个数据对应的图像名称
+    plt.legend(loc='upper right')  # 展示每个数据对应的图像名称
     # plt.savefig('output/TF_subject3.1.png')
     plt.show()
